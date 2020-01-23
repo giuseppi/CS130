@@ -8,8 +8,8 @@ Hit Sphere::Intersection(const Ray& ray, int part) const
 
     float val1 = dot(ray.direction, ray.direction);
     float val2 = 2 * dot(ray.direction, a);
-    float val3 = dot(a,a) - (pow(radius, 2));
-    float val4 = (pow(val2, 2)) - (4 * (val1 * val3));
+    float val3 = dot(a,a) - (radius * radius);
+    float val4 = (val2 * val2) - (4 * (val1 * val3));
 
     if (val4 < 0) {
 	return {0, 0, 0}; // This means no intersection

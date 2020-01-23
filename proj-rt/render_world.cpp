@@ -40,16 +40,9 @@ Hit Render_World::Closest_Intersection(const Ray& ray)
 // set up the initial view ray and call
 void Render_World::Render_Pixel(const ivec2& pixel_index)
 {
-    /*
- *     end_point: camera position (from camera class)
- *         direction: a unit vector from the camera position to the world position of the pixel.
- *             vec3 class has normalized() function that returns the normalized vector;
- *                 e.g. (v1-v2).normalized()
- *                     */ 
-    // set up the initial view ray here
     Ray ray;
     ray.endpoint = camera.position;
-    ray.direction = (camera.position - camera.World_Position(pixel_index)).normalized();
+    ray.direction = (camera.World_Position(pixel_index) - camera.position).normalized();
     vec3 color=Cast_Ray(ray,1);
     camera.Set_Pixel(pixel_index,Pixel_Color(color));
 }
@@ -68,22 +61,6 @@ void Render_World::Render()
 // or the background color if there is no object intersection
 vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
-    // determine the color here
-    //     /* 
-    //         Get the closest hit with an object using Closest_Intersection
-    //             if (there is an intersection) {
-    //                   Set color using the object Shade_Surface function which calculates and
-    //                         returns the color of the ray/object intersection point.
-    //                               Shade_Surface receives as parameters: ray, intersection point, normal at
-    //                                     the intersection point and recursion_depth. You can get the intersection
-    //                                           point using the ray object and the normal using the object pointer
-    //                                                 inside the hit object.
-    //                                                     }
-    //                                                         else (If there is no intersection) {
-    //                                                               Use background_shader of the render_world class. The background shader
-    //                                                                     is a flat_shader so you can use any 3d vector as parameters.
-    //                                                                         }
-    //                                                                             */ 
     vec3 color;
     Hit closest;
     closest = Closest_Intersection(ray);
