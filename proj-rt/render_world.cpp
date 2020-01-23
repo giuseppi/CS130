@@ -23,7 +23,7 @@ Render_World::~Render_World()
 Hit Render_World::Closest_Intersection(const Ray& ray)
 {
     Hit closest = {0, 0, 0};
-    closest.dist = 9999999999;
+    closest.dist = 9999999999999;
     
     for(unsigned i = 0; i < objects.size(); i++) {
       Hit t = objects[i]->Intersection(ray, -1);
@@ -100,9 +100,9 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 
 void Render_World::Initialize_Hierarchy()
 {
-    TODO; // Fill in hierarchy.entries; there should be one entry for
+    // Fill in hierarchy.entries; there should be one entry for
     // each part of each object.
-
+    TODO;
     hierarchy.Reorder_Entries();
     hierarchy.Build_Tree();
 }

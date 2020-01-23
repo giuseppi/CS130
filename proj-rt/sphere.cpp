@@ -4,7 +4,46 @@
 // Determine if the ray intersects with the sphere
 Hit Sphere::Intersection(const Ray& ray, int part) const
 {
-    TODO;
+    vec3 a = ray.endpoint - center;
+
+    float val1 = dot(ray.direction, ray.direction);
+    float val2 = 2 * dot(ray.direction, a);
+    float val3 = dot(a,a) - (pow(radius, 2));
+    float val4 = (pow(val2, 2)) - (4 * (val1 * val3));
+
+    if (val4 < 0) {
+	return {0, 0, 0}; // This means no intersection
+    }
+
+    // Else, there is an intersection
+
+    float point1 = ((-1 * val2) - sqrt(val4)) / (val1 * 2); // First intersection point
+    float point2 = ((-1 * val2) + sqrt(val4)) / (val1 * 2); // Possible exiting intersection point
+    
+    if (point1 < 0) {
+	if (point2 > 0) {
+		point1 = point2;
+	}
+	else {
+		return {0, 0, 0};
+	}
+    }
+
+    Hit intersect;
+    
+    if (val4 > 0) { // Ray enters through the sphere; two intersections
+	intersect.object = this;
+	intersect.dist = point1;
+	intersect.part = part;
+	return intersect;
+    }
+    else if (val4 == 0) { // Ray hits the sphere; one intersection
+	intersect.object = this;
+	intersect.dist = point1;
+	intersect.part = part;
+	return intersect;	
+    }
+
     return {0,0,0};
 }
 
