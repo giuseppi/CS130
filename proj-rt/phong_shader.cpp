@@ -8,10 +8,10 @@ vec3 Phong_Shader::
 Shade_Surface(const Ray& ray,const vec3& intersection_point,
     const vec3& normal,int recursion_depth) const
 {
+	//TO DO: Determine the color
 	vec3 color;
 	vec3 ambient;
 	vec3 lightDir;
-	// TO DO; Determine the color
 	
 	// FORMULA:
 	// I = I_a + I_d + I_s
@@ -19,8 +19,8 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
         // Calculate ambient
 	ambient = color_ambient * world.ambient_color * world.ambient_intensity;
 
+	// I = I_a
 	color += ambient;
-
 
 	for (unsigned i = 0; i < world.lights.size(); ++i) {
 		// Calculate the light's direction
@@ -46,6 +46,8 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
 		double a = std::max(dot(normal, lightDir.normalized()), 0.0);
 		vec3 lc = world.lights[i]->Emitted_Light(lightDir);
 		diffuse = (a * lc * color_diffuse);
+
+		// I = I_a + I_d
 		color += diffuse;
 		
 		// Calculate specular
@@ -53,8 +55,9 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
 		vec3 reflect = lightDir.normalized() - (2 * dot(lightDir.normalized(), normal) * normal);
 		a = std::max(dot(ray.direction, reflect), 0.0);
 		specular = (pow(a, specular_power) * lc * color_specular);
+		
+		// I = I_a + I_d + I_s
 		color += specular;
-
 	}
 
 	return color;
