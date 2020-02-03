@@ -21,8 +21,8 @@ public:
     ~array()
     {
         delete [] data;
-    }
-
+     }
+  
     T& operator[](size_t n)
     {
         return data[n];
@@ -43,13 +43,10 @@ public:
         if(n > capacity);
         {
             T * new_data = new T[n];
-            for(size_t i = 0; i < num_entries; i++) {
+            for(size_t i = 0; i < num_entries; i++)
                 new_data[i] = data[i];
- 	    }
-	    T * temp = data;
             data = new_data;
             capacity = n;
-	    delete[] temp;   
         }
     }
 
