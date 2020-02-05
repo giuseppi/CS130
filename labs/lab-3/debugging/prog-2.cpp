@@ -68,7 +68,6 @@ int main()
     {
         std::cout << balls[i].name << " " << points[i].name << std::endl;
     }
-
     delete [] balls;
     delete [] points;
     

@@ -5,16 +5,22 @@
 
 void print_cases(const std::string& name)
 {
-    char up[8];
-    char lo[8];
-
-    for(size_t i = 0; i < name.size(); i++)
-    {
+    std::vector<char> up(name.size());
+    std::vector<char> lo(name.size());
+    
+    for(size_t i = 0; i < name.size(); ++i) {
         up[i] = std::toupper(name[i]);
         lo[i] = std::tolower(name[i]);
+	std::cout << lo[i];
     }
+	
+    std::cout << " ";
 
-    std::cout << lo << " " << up << std::endl;
+    for(size_t i = 0; i < name.size(); ++i) {
+	std::cout << up[i];
+    }
+    
+    std::cout << std::endl;
 }
 
 int main()
