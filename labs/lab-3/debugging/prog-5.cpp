@@ -28,8 +28,16 @@ struct list
 
     ~list()
     {
-        for(node * n = head; n; n = n->next)
-            delete n;
+        /* for(node * n = head; n; n = n->next)
+            delete n; */
+	node* p = head;
+	while (p != 0) {
+		node* nxt = p->next;
+		delete p;
+		p = nxt;
+	}
+	head = 0;
+	tail = 0;
     }
 
     size_t size() const

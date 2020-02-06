@@ -17,27 +17,37 @@ public:
         return data[i];
     }
 };
-
+/*
 class object
 {
 public:
     std::string name;
 };
-
-class sphere : public object
+*/
+class sphere //: public object
 {
 public:
+    std::string name;
     vec center;
     double radius;
 };
 
-class point : public object
+class point //: public object
 {
 public:
+    std::string name;
     vec location;
 };
 
-void set_names(object* objects, size_t number_objects, const std::string& base_name)
+void set_names(sphere * objects, size_t number_objects, const std::string& base_name)
+{
+    for(size_t i = 0; i < number_objects; i++)
+    {
+        objects[i].name = base_name + std::to_string(i);
+    }
+}
+
+void set_names(point * objects, size_t number_objects, const std::string& base_name)
 {
     for(size_t i = 0; i < number_objects; i++)
     {

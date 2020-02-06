@@ -46,10 +46,9 @@ public:
             for(size_t i = 0; i < num_entries; i++) {
                 new_data[i] = data[i];
  	    }
-	    T * temp = data;
+	    delete[] data;
             data = new_data;
-            capacity = n;
-	    delete[] temp;   
+            capacity = n;   
         }
     }
 
@@ -74,8 +73,10 @@ int main()
     a.append(10);
     a.append(20);
 
-    for(size_t i = 0; i < 100; i++)
-        a.append(a[i]);
+    for(size_t i = 0; i < 100; i++) {
+        int num = a[i];
+	a.append(num);
+    }
 
     long sum = 0;
     for(size_t i = 0; i < a.size(); i++)

@@ -11,10 +11,19 @@ struct array
     }
 
     array(size_t size)
-        :data(new int[n]), n(size)
+        :data(new int[size]), n(size)
     {
+	for (int i = 0; i < size; i++) {
+		data[i] = 0;
+	}
     }
-
+    
+    ~array()
+    {
+	delete[] data;
+	n = 0;
+    }
+    
     const int& operator[](size_t i) const
     {
         return data[i];
@@ -68,15 +77,19 @@ int main()
     b[1] = 9;
     print(b);
 
-    array c = a + b;
-    array d = c - a;
+    array c(2);
+    c[0] = a[0] + b[0];
+    c[1] = a[1] + b[1];
+ 
+    array d(2);
+    d[0] = c[0] - a[0];
+    d[1] = c[1] - a[1];
 
     print(c);
     print(d);
 
     print(0, ", ");
     print(1);
-
     return 0;
 }
 
