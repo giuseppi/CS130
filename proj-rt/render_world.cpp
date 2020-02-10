@@ -24,7 +24,22 @@ Hit Render_World::Closest_Intersection(const Ray& ray)
 {
     Hit closest = {0, 0, 0};
     closest.dist = 9999999999999;
+    //unsigned a = -1;
+    std::vector<int> v;
     
+    hierarchy.Intersection_Candidates(ray, v);
+    
+    for (unsigned i = 0; i < v.size(); ++i) {
+	if (v[i] >= (int)hierarchy.entries.size()) {
+		continue;	
+	}
+	Hit t = hierarchy.entries[v[i]].obj->Intersection(ray, hierarchy.entries[v[i]].part);
+        if ((t.dist < closest.dist) && (t.dist > small_t)) {
+            //a = v[i];
+            closest = t;
+        }
+    }    
+    /*
     for(unsigned i = 0; i < objects.size(); i++) {
       Hit t = objects[i]->Intersection(ray, -1);
       if ((t.dist < closest.dist) && (t.dist > small_t)) {
@@ -33,7 +48,7 @@ Hit Render_World::Closest_Intersection(const Ray& ray)
         closest = t;
       }
     }
-    
+    */
     return closest;
 }
 
@@ -61,6 +76,11 @@ void Render_World::Render()
 // or the background color if there is no object intersection
 vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
+    if (recursion_depth > recursion_depth_limit) {
+        vec3 n;
+        return background_shader->Shade_Surface(ray, n, n, recursion_depth);
+    }
+
     vec3 color;
     Hit closest;
     closest = Closest_Intersection(ray);
@@ -79,7 +99,17 @@ void Render_World::Initialize_Hierarchy()
 {
     // Fill in hierarchy.entries; there should be one entry for
     // each part of each object.
-    TODO;
+    
+    for (size_t i = 0; i < objects.size(); ++i) {
+	for (int j = 0; j < objects[i]->number_parts; ++j) {
+		Entry e;
+		e.obj = objects[i];
+		e.part = j;
+		e.box = objects[i]->Bounding_Box(j);
+		hierarchy.entries.push_back(e);
+	}
+    }
+
     hierarchy.Reorder_Entries();
     hierarchy.Build_Tree();
 }
