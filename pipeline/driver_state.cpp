@@ -18,8 +18,11 @@ void initialize_render(driver_state& state, int width, int height)
 {
     state.image_width=width;
     state.image_height=height;
-    state.image_color=0;
-    state.image_depth=0;
+    state.image_color= new pixel[width * height];
+    state.image_depth= new float[width * height];
+    for (int i = 0; i < width * height; i++) {
+	state.image_color[i] = make_pixel(0,0,0);
+    }
     std::cout<<"TODO: allocate and initialize state.image_color and state.image_depth."<<std::endl;
 }
 
@@ -32,7 +35,28 @@ void initialize_render(driver_state& state, int width, int height)
 //   render_type::strip -    The vertices are to be interpreted as a triangle strip.
 void render(driver_state& state, render_type type)
 {
-    std::cout<<"TODO: implement rendering."<<std::endl;
+	std::cout<<"TODO: implement rendering."<<std::endl;
+	// 4 cases
+	switch(type) {
+		case render_type::triangle:
+			const data_geometry* x[3];
+			for (int i = 0; i < state.num_vertices; i++) {
+				data_geometry* d = new data_geometry();
+				d->data = state.vertex_data + (i * state.floats_per_vertex);
+				x[i] = d;
+			}
+			rasterize_triangle(state, x);
+			break;
+		case render_type::indexed:
+			break;
+		case render_type::fan:
+			break;
+		case render_type::strip:
+			break;
+		case render_type::invalid:
+			break;
+	}
+
 }
 
 
