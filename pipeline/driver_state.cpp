@@ -20,10 +20,8 @@ void initialize_render(driver_state& state, int width, int height)
     state.image_height=height;
     state.image_color= new pixel[width * height];
     state.image_depth= new float[width * height];
-    for (int i = 0; i < width * height; i++) {
-	state.image_color[i] = make_pixel(0,0,0);
-    }
-    std::cout<<"TODO: allocate and initialize state.image_color and state.image_depth."<<std::endl;
+    std::fill(state.image_color, state.image_color + (width * height), make_pixel(0,0,0));
+    std::fill(state.image_depth, state.image_depth + (width * height), 2);
 }
 
 // This function will be called to render the data that has been stored in this class.
@@ -41,21 +39,23 @@ void render(driver_state& state, render_type type)
 	switch(type) {
 		case render_type::triangle:
 			for(int i = 0; i < state.num_vertices; i+=3){
+				const data_geometry* d[3];
 				for(int j = 0; j < 3; j++){
 					data_geometry* g = new data_geometry();
 					data_vertex v;
-					g->data = state.vertex_data + (i + (j * state.floats_per_vertex));
+					g->data = state.vertex_data + (i + j) * state.floats_per_vertex;
 					v.data = g->data;
 					state.vertex_shader(v, *g, state.uniform_data);
-					dg[j] = g;
+					d[j] = g;
 				}
+				rasterize_triangle(state, d);
+				delete d[2];
+				delete d[1];
+				delete d[0];
 			}
-			rasterize_triangle(state, dg);
-			delete dg[0];
-			delete dg[1];
-			delete dg[2];
-			break;
+				break;
 		case render_type::indexed:
+		
 			break;
 		case render_type::fan:
 			break;
@@ -88,68 +88,48 @@ void clip_triangle(driver_state& state, const data_geometry* in[3],int face)
 // fragments, calling the fragment shader, and z-buffering.
 void rasterize_triangle(driver_state& state, const data_geometry* in[3])
 {
-    data_geometry* out = new data_geometry[3];
-    data_vertex* dv = new data_vertex[3];
-    for(int k = 0; k < 3; k++){
-        dv[k].data = in[k]->data;
-        state.vertex_shader((const data_vertex)dv[k], out[k], state.uniform_data);
-        float w = out[k].gl_Position[3];
-        float x = out[k].gl_Position[0]/w;
-        float y = out[k].gl_Position[1]/w;
-        float z = out[k].gl_Position[2]/w;
+    float x[3],y[3],z[3];
+    float k0[3],k1[3],k2[3];
+    float b[3];
+   
 
-        float i = (x * state.image_width / 2) + ((state.image_width - 1) / 2);
-        float j = (y * state.image_height / 2) + ((state.image_height - 1) / 2);
-
-        dv[k].data[0] = i;
-        dv[k].data[1] = j;
-        dv[k].data[2] = z;
+    for (int i = 0; i < 3; i++) {
+        float halfw = state.image_width / 2;
+        float halfh = state.image_height / 2;
         
-	state.image_color[(state.image_width*(int)j) + (int)i] = make_pixel(255,255,255);
+        x[i] = (halfw * (in[i]->gl_Position[0]) / (in[i]->gl_Position[3])) + (halfw - 0.5f);
+        y[i] = (halfh * (in[i]->gl_Position[1]) / (in[i]->gl_Position[3])) + (halfh - 0.5f);
     }
-
-    float* a = new float[3];
-    float* b = new float[3];
-    float* c = new float[3];
     
-    a[0] = dv[0].data[0];
-    a[1] = dv[0].data[1];
-    a[2] = dv[0].data[2];
-    b[0] = dv[1].data[0];
-    b[1] = dv[1].data[1];
-    b[2] = dv[1].data[2];
-    c[0] = dv[2].data[0];
-    c[1] = dv[2].data[1];
-    c[2] = dv[2].data[2];
-
-    float abc = (0.5)*((b[0]*c[1] - b[1]*c[0]) - (a[0]*c[1] - a[1]*c[0]) + (a[0]*b[1] - a[1]*b[0]));
+    float area = 0.5 * ( (x[1] * y[2] - x[2] * y[1]) -
+                         (x[0] * y[2] - x[2] * y[0]) +
+                         (x[0] * y[1] - x[1] * y[0]) );  
     
-    for(int i = 0; i < state.image_width; i++){
-        for(int j = 0; j < state.image_height; j++){
-		float pbc, apc, abp, alp, bet, gam, eye, jay;
-		eye = i;
-		jay = j;
-		
-		pbc = (.5)*((b[0] * c[1] - c[0] * b[1]) - (eye * c[1] - c[0] * jay) + (eye * b[1] - b[0] * jay));
-		apc = (.5)*((eye * c[1] - c[0] * jay) -(a[0] * c[1] - c[0] * a[1]) +(a[0] * jay - eye * a[1]));
-		abp = (.5)*((b[0] * jay - eye * b[1]) -(a[0] * jay - eye * a[1]) +(a[0] * b[1] - b[0] * a[1]));
+    k0[0] = x[1] * y[2] - x[2] * y[1];
+    k1[0] = y[1] - y[2];
+    k2[0] = x[2] - x[1];
 
-		alp = pbc / abc;
-		bet = apc / abc;
-		gam = abp / abc;       
+    k0[1] = x[2] * y[0] - x[0] * y[2];
+    k1[1] = y[2] - y[0];
+    k2[1] = x[0] - x[2];
 
-            if(alp >= 0 && bet >= 0 && gam >= 0){
-                state.image_color[(state.image_width*j) + i] = make_pixel(255,255,255);
+    k0[2] = x[0] * y[1] - x[1] * y[0];
+    k1[2] = y[0] - y[1];
+    k2[2] = x[1] - x[0];
+    
+    float x_min = std::min(std::min(x[0],x[1]),x[2]);
+    float x_max = std::max(std::max(x[0],x[1]),x[2]);
+    float y_min = std::min(std::min(y[0],y[1]),y[2]);
+    float y_max = std::max(std::max(y[0],y[1]),y[2]);
+    
+    for (int y = y_min; y < y_max + 1; y++) {
+        for (int x = x_min + 1; x < x_max + 1; x++) {
+            for (int v = 0; v < 3; v++) {
+                b[v] = 0.5 * (k0[v] + k1[v] * x + k2[v] * y) / area;
+            }
+            if (b[0] >= 0 && b[1] >= 0 && b[2] >= 0) {
+                state.image_color[x + y * state.image_width] = make_pixel(255,255,255);
             }
         }
     }
-
-    delete[] a;
-    delete[] b;
-    delete[] c;
-    delete[] dv;
-    delete[] out;
-
-    std::cout<<"TODO: implement rasterization"<<std::endl;
 }
-
